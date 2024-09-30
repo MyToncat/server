@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pion/turn/v2"
+	"github.com/pion/turn/v4"
 	"github.com/rs/zerolog/log"
 	"github.com/screego/server/config"
 	"github.com/screego/server/config/ipdns"
@@ -98,14 +98,24 @@ func newInternalServer(conf config.Config) (Server, error) {
 		IPProvider:            conf.TurnIPProvider,
 	}
 
+	var permissions turn.PermissionHandler = func(clientAddr net.Addr, peerIP net.IP) bool {
+		for _, cidr := range conf.TurnDenyPeersParsed {
+			if cidr.Contains(peerIP) {
+				return false
+			}
+		}
+
+		return true
+	}
+
 	_, err = turn.NewServer(turn.ServerConfig{
 		Realm:       Realm,
 		AuthHandler: svr.authenticate,
 		ListenerConfigs: []turn.ListenerConfig{
-			{Listener: tcpListener, RelayAddressGenerator: gen},
+			{Listener: tcpListener, RelayAddressGenerator: gen, PermissionHandler: permissions},
 		},
 		PacketConnConfigs: []turn.PacketConnConfig{
-			{PacketConn: udpListener, RelayAddressGenerator: gen},
+			{PacketConn: udpListener, RelayAddressGenerator: gen, PermissionHandler: permissions},
 		},
 	})
 	if err != nil {
