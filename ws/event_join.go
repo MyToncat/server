@@ -16,7 +16,7 @@ type Join struct {
 }
 
 func (e *Join) Execute(rooms *Rooms, current ClientInfo) error {
-	if current.RoomID != "" {
+	if rooms.connected[current.ID] != "" {
 		return fmt.Errorf("cannot join room, you are already in one")
 	}
 
@@ -38,9 +38,9 @@ func (e *Join) Execute(rooms *Rooms, current ClientInfo) error {
 		Streaming: false,
 		Owner:     false,
 		Addr:      current.Addr,
-		Write:     current.Write,
-		Close:     current.Close,
+		_write:    current.Write,
 	}
+	rooms.connected[current.ID] = room.ID
 	room.notifyInfoChanged()
 	usersJoinedTotal.Inc()
 

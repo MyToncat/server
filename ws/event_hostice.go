@@ -16,13 +16,9 @@ func init() {
 type HostICE outgoing.P2PMessage
 
 func (e *HostICE) Execute(rooms *Rooms, current ClientInfo) error {
-	if current.RoomID == "" {
-		return fmt.Errorf("not in a room")
-	}
-
-	room, ok := rooms.Rooms[current.RoomID]
-	if !ok {
-		return fmt.Errorf("room with id %s does not exist", current.RoomID)
+	room, err := rooms.CurrentRoom(current)
+	if err != nil {
+		return err
 	}
 
 	session, ok := room.Sessions[e.SID]
@@ -36,7 +32,7 @@ func (e *HostICE) Execute(rooms *Rooms, current ClientInfo) error {
 		return fmt.Errorf("permission denied for session %s", e.SID)
 	}
 
-	room.Users[session.Client].Write <- outgoing.HostICE(*e)
+	room.Users[session.Client].WriteTimeout(outgoing.HostICE(*e))
 
 	return nil
 }

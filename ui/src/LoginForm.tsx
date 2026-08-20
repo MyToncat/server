@@ -9,7 +9,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
+import {makeStyles} from 'tss-react/mui';
 import {green} from '@mui/material/colors';
 
 export const LoginForm = ({config: {login}, hide}: {config: UseConfig; hide?: () => void}) => {
@@ -54,7 +54,7 @@ export const LoginForm = ({config: {login}, hide}: {config: UseConfig; hide?: ()
                         size="small"
                         margin="dense"
                     />
-                    <Box marginTop={1}>
+                    <Box sx={{marginTop: 1}}>
                         <LoadingButton
                             type="submit"
                             loading={loading}
@@ -72,7 +72,7 @@ export const LoginForm = ({config: {login}, hide}: {config: UseConfig; hide?: ()
 };
 
 export const LoadingButton = ({loading, children, ...props}: ButtonProps & {loading: boolean}) => {
-    const classes = useStyles();
+    const {classes} = useStyles();
     return (
         <Button {...props} disabled={loading}>
             {children}
@@ -83,7 +83,7 @@ export const LoadingButton = ({loading, children, ...props}: ButtonProps & {load
     );
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     buttonProgress: {
         color: green[500],
         position: 'absolute',

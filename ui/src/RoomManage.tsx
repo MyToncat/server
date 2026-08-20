@@ -50,7 +50,7 @@ const CreateRoom = ({room, config}: Pick<UseRoom, 'room'> & {config: UIConfig}) 
                     }
                     label="Close Room after you leave"
                 />
-                <Box paddingBottom={0.5}>
+                <Box sx={{paddingBottom: 0.5}}>
                     <Typography>
                         Nat Traversal via:{' '}
                         <Link
@@ -79,11 +79,11 @@ export const RoomManage = ({room, config}: {room: FCreateRoom; config: UseConfig
     return (
         <Grid
             container={true}
-            justifyContent="center"
+            sx={{justifyContent: 'center'}}
             style={{paddingTop: 50, maxWidth: 400, width: '100%', margin: '0 auto'}}
             spacing={4}
         >
-            <Grid item xs={12}>
+            <Grid size={12}>
                 <Typography align="center" gutterBottom>
                     <img src="./logo.svg" style={{width: 230}} alt="logo" />
                 </Typography>

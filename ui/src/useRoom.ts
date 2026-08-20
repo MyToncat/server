@@ -62,11 +62,7 @@ const hostSession = async ({
 
     peer.onconnectionstatechange = (event) => {
         console.log('host change', event);
-        if (
-            peer.connectionState === 'closed' ||
-            peer.connectionState === 'disconnected' ||
-            peer.connectionState === 'failed'
-        ) {
+        if (peer.connectionState === 'closed' || peer.connectionState === 'failed') {
             peer.close();
             done();
         }
@@ -81,11 +77,11 @@ const hostSession = async ({
             .find((t) => t.sender && t.sender.track === stream.getVideoTracks()[0]);
 
         if (!!transceiver && 'setCodecPreferences' in transceiver) {
-            const exactMatch: RTCRtpCodecCapability[] = [];
-            const mimeMatch: RTCRtpCodecCapability[] = [];
-            const others: RTCRtpCodecCapability[] = [];
+            const exactMatch: RTCRtpCodec[] = [];
+            const mimeMatch: RTCRtpCodec[] = [];
+            const others: RTCRtpCodec[] = [];
 
-            RTCRtpSender.getCapabilities('video')?.codecs.forEach((codec) => {
+            RTCRtpReceiver.getCapabilities('video')?.codecs.forEach((codec) => {
                 if (codec.mimeType === preferCodec.mimeType) {
                     if (codec.sdpFmtpLine === preferCodec.sdpFmtpLine) {
                         exactMatch.push(codec);
@@ -134,19 +130,20 @@ const clientSession = async ({
     };
     peer.onconnectionstatechange = (event) => {
         console.log('client change', event);
-        if (
-            peer.connectionState === 'closed' ||
-            peer.connectionState === 'disconnected' ||
-            peer.connectionState === 'failed'
-        ) {
+        if (peer.connectionState === 'closed' || peer.connectionState === 'failed') {
             peer.close();
             done();
         }
     };
+
+    let notified = false;
+    const stream = new MediaStream();
     peer.ontrack = (event) => {
-        const stream = new MediaStream();
         stream.addTrack(event.track);
-        onTrack(stream);
+        if (!notified) {
+            notified = true;
+            onTrack(stream);
+        }
     };
 
     return peer;
@@ -157,10 +154,10 @@ export type FCreateRoom = (room: RoomCreate | JoinRoom) => Promise<void>;
 export const useRoom = (config: UIConfig): UseRoom => {
     const [roomID, setRoomID] = useRoomID();
     const {enqueueSnackbar} = useSnackbar();
-    const conn = React.useRef<WebSocket>();
+    const conn = React.useRef<WebSocket | undefined>(undefined);
     const host = React.useRef<Record<string, RTCPeerConnection>>({});
     const client = React.useRef<Record<string, RTCPeerConnection>>({});
-    const stream = React.useRef<MediaStream>();
+    const stream = React.useRef<MediaStream>(undefined);
 
     const [state, setState] = React.useState<RoomState>(false);
 
@@ -332,6 +329,14 @@ export const useRoom = (config: UIConfig): UseRoom => {
         try {
             stream.current = await navigator.mediaDevices.getDisplayMedia({
                 video: {frameRate: loadSettings().framerate},
+                audio: {
+                    echoCancellation: false,
+                    autoGainControl: false,
+                    noiseSuppression: false,
+                    // https://medium.com/@trystonperry/why-is-getdisplaymedias-audio-quality-so-bad-b49ba9cfaa83
+                    // @ts-expect-error
+                    googAutoGainControl: false,
+                },
             });
         } catch (e) {
             console.log('Could not getDisplayMedia', e);

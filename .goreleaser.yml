@@ -1,6 +1,7 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
 project_name: screego
+version: 2
 before:
   hooks:
     - go mod download
@@ -20,9 +21,13 @@ builds:
       - arm64
       - ppc64
       - ppc64le
+      - riscv64
     goarm:
       - "6"
       - "7"
+    ignore:
+      - goos: windows
+        goarch: arm
     flags:
       - '-tags="netgo osusergo"'
     ldflags:
@@ -39,11 +44,11 @@ archives:
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{- if eq .Arch "386" }}i386{{- else }}{{ .Arch }}{{ end }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
 checksum:
   disable: true
 changelog:
-  skip: true
+  disable: true
 dockers:
   - use: buildx
     goos: linux
@@ -153,6 +158,24 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: riscv64
+    goarm: ""
+    image_templates:
+      - "screego/server:riscv64-unstable"
+      - "screego/server:riscv64-{{ .RawVersion }}"
+      - "screego/server:riscv64-{{ .Major }}"
+      - "ghcr.io/screego/server:riscv64-unstable"
+      - "ghcr.io/screego/server:riscv64-{{ .RawVersion }}"
+      - "ghcr.io/screego/server:riscv64-{{ .Major }}"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/riscv64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
 docker_manifests:
   - name_template: "ghcr.io/screego/server:unstable"
     image_templates:
@@ -162,6 +185,7 @@ docker_manifests:
       - "ghcr.io/screego/server:armv7-unstable"
       - "ghcr.io/screego/server:armv6-unstable"
       - "ghcr.io/screego/server:ppc64le-unstable"
+      - "ghcr.io/screego/server:riscv64-unstable"
   - name_template: "screego/server:unstable"
     image_templates:
       - "screego/server:amd64-unstable"
@@ -170,6 +194,7 @@ docker_manifests:
       - "screego/server:armv7-unstable"
       - "screego/server:armv6-unstable"
       - "screego/server:ppc64le-unstable"
+      - "screego/server:riscv64-unstable"
   - name_template: "screego/server:{{ .RawVersion }}"
     image_templates:
       - "screego/server:amd64-{{ .RawVersion }}"
@@ -178,6 +203,7 @@ docker_manifests:
       - "screego/server:armv7-{{ .RawVersion }}"
       - "screego/server:armv6-{{ .RawVersion }}"
       - "screego/server:ppc64le-{{ .RawVersion }}"
+      - "screego/server:riscv64-{{ .RawVersion }}"
   - name_template: "ghcr.io/screego/server:{{ .RawVersion }}"
     image_templates:
       - "ghcr.io/screego/server:amd64-{{ .RawVersion }}"
@@ -186,6 +212,7 @@ docker_manifests:
       - "ghcr.io/screego/server:armv7-{{ .RawVersion }}"
       - "ghcr.io/screego/server:armv6-{{ .RawVersion }}"
       - "ghcr.io/screego/server:ppc64le-{{ .RawVersion }}"
+      - "ghcr.io/screego/server:riscv64-{{ .RawVersion }}"
   - name_template: "screego/server:{{ .Major }}"
     image_templates:
       - "screego/server:amd64-{{ .Major }}"
@@ -194,6 +221,7 @@ docker_manifests:
       - "screego/server:armv7-{{ .Major }}"
       - "screego/server:armv6-{{ .Major }}"
       - "screego/server:ppc64le-{{ .Major }}"
+      - "screego/server:riscv64-{{ .Major }}"
   - name_template: "ghcr.io/screego/server:{{ .Major }}"
     image_templates:
       - "ghcr.io/screego/server:amd64-{{ .Major }}"
@@ -202,3 +230,4 @@ docker_manifests:
       - "ghcr.io/screego/server:armv7-{{ .Major }}"
       - "ghcr.io/screego/server:armv6-{{ .Major }}"
       - "ghcr.io/screego/server:ppc64le-{{ .Major }}"
+      - "ghcr.io/screego/server:riscv64-{{ .Major }}"

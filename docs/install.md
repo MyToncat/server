@@ -14,7 +14,7 @@ Setting up Screego with docker is pretty easy, you basically just have to start 
 [ghcr.io/screego/server](https://github.com/orgs/screego/packages/container/package/server) and
 [screego/server](https://hub.docker.com/r/screego/server)
 docker images are multi-arch docker images.
-This means the image will work for `amd64`, `i386`, `ppc64le` (power pc), `arm64`, `armv7` (Raspberry PI) and `armv6`.
+This means the image will work for `amd64`, `i386`, `ppc64le` (power pc), `riscv64`, `arm64`, `armv7` (Raspberry PI) and `armv6`.
 
 By default, Screego runs on port 5050.
 
@@ -27,7 +27,6 @@ $ docker run --net=host -e SCREEGO_EXTERNAL_IP=EXTERNALIP ghcr.io/screego/server
 
 **docker-compose.yml**
 ```yaml
-version: "3.7"
 services:
   screego:
     image: ghcr.io/screego/server:GITHUB_VERSION
@@ -40,6 +39,9 @@ If you don't want to use the host network, then you can configure docker like th
 
 <details><summary>(Click to expand)</summary>
 <p>
+
+!> Screego may not work correctly when deploying it in docker without `network_mode: host`.
+   See [#226](https://github.com/screego/server/issues/226)
 
 ```bash
 $ docker run -it \
